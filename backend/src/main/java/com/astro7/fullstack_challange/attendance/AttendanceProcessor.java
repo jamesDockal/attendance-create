@@ -4,6 +4,7 @@ import java.util.concurrent.ExecutorService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -15,12 +16,14 @@ public class AttendanceProcessor {
 	private final AttendanceRepository repository;
 	private final ProtocolClient protocolClient;
 	private final ExecutorService executor;
+	private final int maxAttempts;
 
 	public AttendanceProcessor(AttendanceRepository repository, ProtocolClient protocolClient,
-			ExecutorService processingExecutor) {
+			ExecutorService processingExecutor, @Value("${processing.max-attempts}") int maxAttempts) {
 		this.repository = repository;
 		this.protocolClient = protocolClient;
 		this.executor = processingExecutor;
+		this.maxAttempts = maxAttempts;
 	}
 
 	@Scheduled(fixedDelayString = "${processing.interval}")
@@ -39,7 +42,7 @@ public class AttendanceProcessor {
 			attendance.complete(protocolClient.fetchProtocol());
 		} catch (Exception e) {
 			log.warn("Falha ao buscar protocolo do atendimento {}: {}", id, e.getMessage());
-			attendance.retryLater();
+			attendance.registerFailure(maxAttempts);
 		}
 		repository.save(attendance);
 	}

@@ -50,9 +50,9 @@ public class Attendance {
 		this.status = AttendanceStatus.COMPLETED;
 	}
 
-	public void retryLater() {
+	public void registerFailure(int maxAttempts) {
 		attempts++;
-		status = AttendanceStatus.PENDING;
+		status = attempts >= maxAttempts ? AttendanceStatus.FAILED : AttendanceStatus.PENDING;
 	}
 
 	public Long getId() {
