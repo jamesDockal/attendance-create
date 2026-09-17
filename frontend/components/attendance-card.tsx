@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { useAttendance } from "@/hooks/use-attendance";
-import type { Attendance, AttendanceStatus } from "@/lib/api";
+import { openAttendance, type Attendance, type AttendanceStatus } from "@/lib/api";
 import { formatCpf } from "@/lib/cpf";
 
 const statusBadge: Record<AttendanceStatus, { label: string; className: string }> = {
@@ -13,12 +14,26 @@ const statusBadge: Record<AttendanceStatus, { label: string; className: string }
 
 type Props = {
   initial: Attendance;
+  onRenewed: (attendance: Attendance) => void;
 };
 
-export function AttendanceCard({ initial }: Props) {
+export function AttendanceCard({ initial, onRenewed }: Props) {
   const { attendance, error } = useAttendance(initial);
+  const [renewing, setRenewing] = useState(false);
+  const [renewError, setRenewError] = useState<string | null>(null);
   const badge = statusBadge[attendance.status];
   const waiting = attendance.status === "PENDING" || attendance.status === "PROCESSING";
+
+  async function renew() {
+    setRenewing(true);
+    setRenewError(null);
+    try {
+      onRenewed(await openAttendance({ name: attendance.name, cpf: attendance.cpf }));
+    } catch (err) {
+      setRenewError(err instanceof Error ? err.message : "Erro inesperado");
+      setRenewing(false);
+    }
+  }
 
   return (
     <article className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
@@ -53,6 +68,20 @@ export function AttendanceCard({ initial }: Props) {
 
       {error && waiting && (
         <p className="mt-4 text-sm text-amber-700">{error}. Tentando novamente...</p>
+      )}
+
+      {!waiting && (
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={renew}
+            disabled={renewing}
+            className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm font-medium transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {renewing ? "Gerando..." : "Gerar novo atendimento"}
+          </button>
+          {renewError && <p className="text-sm text-red-600">{renewError}</p>}
+        </div>
       )}
     </article>
   );

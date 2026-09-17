@@ -12,6 +12,12 @@ export function AttendanceDesk() {
     setAttendances((current) => [attendance, ...current]);
   }
 
+  function replace(previousId: number, attendance: Attendance) {
+    setAttendances((current) =>
+      current.map((item) => (item.id === previousId ? attendance : item)),
+    );
+  }
+
   return (
     <main className="mx-auto w-full max-w-xl px-4 py-12">
       <header className="mb-8">
@@ -29,7 +35,11 @@ export function AttendanceDesk() {
         <section className="mt-8 space-y-3">
           <h2 className="text-sm font-medium text-zinc-500">Atendimentos</h2>
           {attendances.map((attendance) => (
-            <AttendanceCard key={attendance.id} initial={attendance} />
+            <AttendanceCard
+              key={attendance.id}
+              initial={attendance}
+              onRenewed={(next) => replace(attendance.id, next)}
+            />
           ))}
         </section>
       )}
