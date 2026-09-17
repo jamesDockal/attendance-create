@@ -34,4 +34,9 @@ public class AttendanceService {
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Atendimento não encontrado"));
 	}
 
+	@Transactional(readOnly = true)
+	public List<Attendance> list() {
+		return repository.findAllByOrderByCreatedAtDesc();
+	}
+
 }

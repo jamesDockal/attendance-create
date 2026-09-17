@@ -1,6 +1,7 @@
 package com.astro7.fullstack_challange.attendance;
 
 import java.net.URI;
+import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,6 +33,11 @@ public class AttendanceController {
 	@GetMapping("/{id}")
 	public AttendanceResponse find(@PathVariable Long id) {
 		return AttendanceResponse.from(service.find(id));
+	}
+
+	@GetMapping
+	public List<AttendanceResponse> list() {
+		return service.list().stream().map(AttendanceResponse::from).toList();
 	}
 
 }

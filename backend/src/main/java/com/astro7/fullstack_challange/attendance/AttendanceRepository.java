@@ -12,6 +12,8 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
 
 	List<Attendance> findTop50ByStatusOrderByCreatedAtAsc(AttendanceStatus status);
 
+	List<Attendance> findAllByOrderByCreatedAtDesc();
+
 	boolean existsByCpfAndStatusIn(String cpf, Collection<AttendanceStatus> statuses);
 
 	@Transactional
