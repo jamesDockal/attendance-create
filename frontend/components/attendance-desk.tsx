@@ -6,7 +6,11 @@ import { AttendanceForm } from "@/components/attendance-form";
 import type { Attendance } from "@/lib/api";
 
 export function AttendanceDesk() {
-  const [attendance, setAttendance] = useState<Attendance | null>(null);
+  const [attendances, setAttendances] = useState<Attendance[]>([]);
+
+  function add(attendance: Attendance) {
+    setAttendances((current) => [attendance, ...current]);
+  }
 
   return (
     <main className="mx-auto w-full max-w-xl px-4 py-12">
@@ -18,13 +22,16 @@ export function AttendanceDesk() {
       </header>
 
       <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
-        <AttendanceForm onCreated={setAttendance} />
+        <AttendanceForm onCreated={add} />
       </div>
 
-      {attendance && (
-        <div className="mt-6">
-          <AttendanceCard key={attendance.id} initial={attendance} />
-        </div>
+      {attendances.length > 0 && (
+        <section className="mt-8 space-y-3">
+          <h2 className="text-sm font-medium text-zinc-500">Atendimentos</h2>
+          {attendances.map((attendance) => (
+            <AttendanceCard key={attendance.id} initial={attendance} />
+          ))}
+        </section>
       )}
     </main>
   );
