@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import jakarta.annotation.PostConstruct;
+
 @Component
 public class AttendanceProcessor {
 
@@ -24,6 +26,14 @@ public class AttendanceProcessor {
 		this.protocolClient = protocolClient;
 		this.executor = processingExecutor;
 		this.maxAttempts = maxAttempts;
+	}
+
+	@PostConstruct
+	void requeueInterrupted() {
+		int count = repository.replaceStatus(AttendanceStatus.PROCESSING, AttendanceStatus.PENDING);
+		if (count > 0) {
+			log.info("{} atendimento(s) interrompido(s) voltaram para a fila", count);
+		}
 	}
 
 	@Scheduled(fixedDelayString = "${processing.interval}")
