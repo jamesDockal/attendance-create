@@ -45,6 +45,16 @@ public class Attendance {
 		this.status = AttendanceStatus.PENDING;
 	}
 
+	public void complete(String protocol) {
+		this.protocol = protocol;
+		this.status = AttendanceStatus.COMPLETED;
+	}
+
+	public void retryLater() {
+		attempts++;
+		status = AttendanceStatus.PENDING;
+	}
+
 	public Long getId() {
 		return id;
 	}
