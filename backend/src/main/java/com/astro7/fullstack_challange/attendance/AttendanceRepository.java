@@ -1,5 +1,6 @@
 package com.astro7.fullstack_challange.attendance;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,6 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
 
 	List<Attendance> findTop50ByStatusOrderByCreatedAtAsc(AttendanceStatus status);
+
+	boolean existsByCpfAndStatusIn(String cpf, Collection<AttendanceStatus> statuses);
 
 	@Transactional
 	@Modifying
