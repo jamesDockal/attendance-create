@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { AttendanceCard } from "@/components/attendance-card";
 import { AttendanceForm } from "@/components/attendance-form";
 import type { Attendance } from "@/lib/api";
 
@@ -21,9 +22,9 @@ export function AttendanceDesk() {
       </div>
 
       {attendance && (
-        <p className="mt-6 text-sm text-zinc-600">
-          Atendimento #{attendance.id} registrado. Aguardando processamento.
-        </p>
+        <div className="mt-6">
+          <AttendanceCard key={attendance.id} initial={attendance} />
+        </div>
       )}
     </main>
   );
