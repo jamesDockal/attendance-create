@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AttendanceCard } from "@/components/attendance-card";
+import { AttendanceFilters, matchesFilters, type StatusFilter } from "@/components/attendance-filters";
 import { AttendanceForm } from "@/components/attendance-form";
 import { AttendanceSkeleton } from "@/components/attendance-skeleton";
 import { listAttendances, type Attendance } from "@/lib/api";
@@ -9,6 +10,8 @@ import { listAttendances, type Attendance } from "@/lib/api";
 export function AttendanceDesk() {
   const [attendances, setAttendances] = useState<Attendance[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState<StatusFilter>("ALL");
 
   useEffect(() => {
     listAttendances()
@@ -27,6 +30,8 @@ export function AttendanceDesk() {
     );
   }
 
+  const filtered = attendances.filter((attendance) => matchesFilters(attendance, search, status));
+
   return (
     <main className="mx-auto w-full max-w-xl px-4 py-12">
       <header className="mb-8">
@@ -43,13 +48,25 @@ export function AttendanceDesk() {
       {(loading || attendances.length > 0) && (
         <section className="mt-8 space-y-3">
           <h2 className="text-sm font-medium text-zinc-500">Atendimentos</h2>
+
+          {!loading && attendances.length > 0 && (
+            <AttendanceFilters
+              search={search}
+              onSearchChange={setSearch}
+              status={status}
+              onStatusChange={setStatus}
+            />
+          )}
+
           {loading ? (
             <>
               <AttendanceSkeleton />
               <AttendanceSkeleton />
             </>
+          ) : filtered.length === 0 ? (
+            <p className="text-sm text-zinc-500">Nenhum atendimento encontrado.</p>
           ) : (
-            attendances.map((attendance) => (
+            filtered.map((attendance) => (
               <AttendanceCard
                 key={attendance.id}
                 initial={attendance}
