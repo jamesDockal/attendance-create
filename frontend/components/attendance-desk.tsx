@@ -3,15 +3,18 @@
 import { useEffect, useState } from "react";
 import { AttendanceCard } from "@/components/attendance-card";
 import { AttendanceForm } from "@/components/attendance-form";
+import { AttendanceSkeleton } from "@/components/attendance-skeleton";
 import { listAttendances, type Attendance } from "@/lib/api";
 
 export function AttendanceDesk() {
   const [attendances, setAttendances] = useState<Attendance[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     listAttendances()
       .then(setAttendances)
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
   function add(attendance: Attendance) {
@@ -37,16 +40,23 @@ export function AttendanceDesk() {
         <AttendanceForm onCreated={add} />
       </div>
 
-      {attendances.length > 0 && (
+      {(loading || attendances.length > 0) && (
         <section className="mt-8 space-y-3">
           <h2 className="text-sm font-medium text-zinc-500">Atendimentos</h2>
-          {attendances.map((attendance) => (
-            <AttendanceCard
-              key={attendance.id}
-              initial={attendance}
-              onRenewed={(next) => replace(attendance.id, next)}
-            />
-          ))}
+          {loading ? (
+            <>
+              <AttendanceSkeleton />
+              <AttendanceSkeleton />
+            </>
+          ) : (
+            attendances.map((attendance) => (
+              <AttendanceCard
+                key={attendance.id}
+                initial={attendance}
+                onRenewed={(next) => replace(attendance.id, next)}
+              />
+            ))
+          )}
         </section>
       )}
     </main>
