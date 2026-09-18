@@ -1,12 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AttendanceCard } from "@/components/attendance-card";
 import { AttendanceForm } from "@/components/attendance-form";
-import type { Attendance } from "@/lib/api";
+import { listAttendances, type Attendance } from "@/lib/api";
 
 export function AttendanceDesk() {
   const [attendances, setAttendances] = useState<Attendance[]>([]);
+
+  useEffect(() => {
+    listAttendances()
+      .then(setAttendances)
+      .catch(() => {});
+  }, []);
 
   function add(attendance: Attendance) {
     setAttendances((current) => [attendance, ...current]);

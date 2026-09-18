@@ -54,3 +54,7 @@ export function openAttendance(data: NewAttendance) {
 export function getAttendance(id: number) {
   return request<Attendance>(`/api/attendances/${id}`);
 }
+
+export function listAttendances() {
+  return request<Attendance[]>("/api/attendances");
+}
