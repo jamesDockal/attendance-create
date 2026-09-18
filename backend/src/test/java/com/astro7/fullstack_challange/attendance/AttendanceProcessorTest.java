@@ -28,13 +28,16 @@ class AttendanceProcessorTest {
 	private ProtocolClient protocolClient;
 
 	@Mock
+	private AttendanceBroadcaster broadcaster;
+
+	@Mock
 	private ExecutorService executor;
 
 	private AttendanceProcessor processor;
 
 	@BeforeEach
 	void setUp() {
-		processor = new AttendanceProcessor(repository, protocolClient, executor, 3);
+		processor = new AttendanceProcessor(repository, protocolClient, broadcaster, executor, 3);
 	}
 
 	@Test

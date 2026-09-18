@@ -14,9 +14,11 @@ public class AttendanceService {
 			AttendanceStatus.PROCESSING);
 
 	private final AttendanceRepository repository;
+	private final AttendanceBroadcaster broadcaster;
 
-	public AttendanceService(AttendanceRepository repository) {
+	public AttendanceService(AttendanceRepository repository, AttendanceBroadcaster broadcaster) {
 		this.repository = repository;
+		this.broadcaster = broadcaster;
 	}
 
 	@Transactional
@@ -25,7 +27,9 @@ public class AttendanceService {
 		if (repository.existsByCpfAndStatusIn(cpf, OPEN_STATUSES)) {
 			throw new ResponseStatusException(HttpStatus.CONFLICT, "Já existe um atendimento em andamento para este CPF");
 		}
-		return repository.save(new Attendance(request.name().trim(), cpf));
+		Attendance attendance = repository.save(new Attendance(request.name().trim(), cpf));
+		broadcaster.broadcast(attendance);
+		return attendance;
 	}
 
 	@Transactional(readOnly = true)

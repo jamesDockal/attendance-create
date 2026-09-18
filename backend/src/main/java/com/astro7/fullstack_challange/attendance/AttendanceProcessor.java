@@ -17,13 +17,16 @@ public class AttendanceProcessor {
 
 	private final AttendanceRepository repository;
 	private final ProtocolClient protocolClient;
+	private final AttendanceBroadcaster broadcaster;
 	private final ExecutorService executor;
 	private final int maxAttempts;
 
 	public AttendanceProcessor(AttendanceRepository repository, ProtocolClient protocolClient,
-			ExecutorService processingExecutor, @Value("${processing.max-attempts}") int maxAttempts) {
+			AttendanceBroadcaster broadcaster, ExecutorService processingExecutor,
+			@Value("${processing.max-attempts}") int maxAttempts) {
 		this.repository = repository;
 		this.protocolClient = protocolClient;
+		this.broadcaster = broadcaster;
 		this.executor = processingExecutor;
 		this.maxAttempts = maxAttempts;
 	}
@@ -55,6 +58,7 @@ public class AttendanceProcessor {
 			attendance.registerFailure(maxAttempts);
 		}
 		repository.save(attendance);
+		broadcaster.broadcast(attendance);
 	}
 
 }
