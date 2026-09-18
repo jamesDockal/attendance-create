@@ -5,6 +5,8 @@ import { AttendanceCard } from "@/components/attendance-card";
 import { AttendanceFilters, matchesFilters, type StatusFilter } from "@/components/attendance-filters";
 import { AttendanceForm } from "@/components/attendance-form";
 import { AttendanceSkeleton } from "@/components/attendance-skeleton";
+import { RealtimeToggle } from "@/components/realtime-toggle";
+import { AttendanceSocketProvider } from "@/contexts/attendance-socket-context";
 import { listAttendances, type Attendance } from "@/lib/api";
 
 export function AttendanceDesk() {
@@ -12,6 +14,7 @@ export function AttendanceDesk() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<StatusFilter>("ALL");
+  const [realtime, setRealtime] = useState(false);
 
   useEffect(() => {
     listAttendances()
@@ -33,49 +36,54 @@ export function AttendanceDesk() {
   const filtered = attendances.filter((attendance) => matchesFilters(attendance, search, status));
 
   return (
-    <main className="mx-auto w-full max-w-xl px-4 py-12">
-      <header className="mb-8">
-        <h1 className="text-2xl font-semibold">Abertura de atendimento</h1>
-        <p className="mt-1 text-sm text-zinc-500">
-          Informe os dados do paciente para registrar o atendimento.
-        </p>
-      </header>
+    <AttendanceSocketProvider enabled={realtime}>
+      <main className="mx-auto w-full max-w-xl px-4 py-12">
+        <header className="mb-8 flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-semibold">Abertura de atendimento</h1>
+            <p className="mt-1 text-sm text-zinc-500">
+              Informe os dados do paciente para registrar o atendimento.
+            </p>
+          </div>
+          <RealtimeToggle enabled={realtime} onChange={setRealtime} />
+        </header>
 
-      <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
-        <AttendanceForm onCreated={add} />
-      </div>
+        <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+          <AttendanceForm onCreated={add} />
+        </div>
 
-      {(loading || attendances.length > 0) && (
-        <section className="mt-8 space-y-3">
-          <h2 className="text-sm font-medium text-zinc-500">Atendimentos</h2>
+        {(loading || attendances.length > 0) && (
+          <section className="mt-8 space-y-3">
+            <h2 className="text-sm font-medium text-zinc-500">Atendimentos</h2>
 
-          {!loading && attendances.length > 0 && (
-            <AttendanceFilters
-              search={search}
-              onSearchChange={setSearch}
-              status={status}
-              onStatusChange={setStatus}
-            />
-          )}
-
-          {loading ? (
-            <>
-              <AttendanceSkeleton />
-              <AttendanceSkeleton />
-            </>
-          ) : filtered.length === 0 ? (
-            <p className="text-sm text-zinc-500">Nenhum atendimento encontrado.</p>
-          ) : (
-            filtered.map((attendance) => (
-              <AttendanceCard
-                key={attendance.id}
-                initial={attendance}
-                onRenewed={(next) => replace(attendance.id, next)}
+            {!loading && attendances.length > 0 && (
+              <AttendanceFilters
+                search={search}
+                onSearchChange={setSearch}
+                status={status}
+                onStatusChange={setStatus}
               />
-            ))
-          )}
-        </section>
-      )}
-    </main>
+            )}
+
+            {loading ? (
+              <>
+                <AttendanceSkeleton />
+                <AttendanceSkeleton />
+              </>
+            ) : filtered.length === 0 ? (
+              <p className="text-sm text-zinc-500">Nenhum atendimento encontrado.</p>
+            ) : (
+              filtered.map((attendance) => (
+                <AttendanceCard
+                  key={attendance.id}
+                  initial={attendance}
+                  onRenewed={(next) => replace(attendance.id, next)}
+                />
+              ))
+            )}
+          </section>
+        )}
+      </main>
+    </AttendanceSocketProvider>
   );
 }

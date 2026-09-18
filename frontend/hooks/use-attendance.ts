@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useAttendanceSocket } from "@/contexts/attendance-socket-context";
 import { getAttendance, type Attendance } from "@/lib/api";
 
 const POLL_INTERVAL = 2000;
@@ -10,10 +11,21 @@ export function isFinished(attendance: Attendance) {
 export function useAttendance(initial: Attendance) {
   const [attendance, setAttendance] = useState(initial);
   const [error, setError] = useState<string | null>(null);
+  const { enabled: realtime, subscribe } = useAttendanceSocket();
   const finished = isFinished(attendance);
 
   useEffect(() => {
-    if (finished) {
+    if (!realtime || finished) {
+      return;
+    }
+    return subscribe(initial.id, (updated) => {
+      setAttendance(updated);
+      setError(null);
+    });
+  }, [initial.id, realtime, finished, subscribe]);
+
+  useEffect(() => {
+    if (realtime || finished) {
       return;
     }
 
@@ -39,7 +51,7 @@ export function useAttendance(initial: Attendance) {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [initial.id, finished]);
+  }, [initial.id, finished, realtime]);
 
   return { attendance, error };
 }
